@@ -1,0 +1,5 @@
+name: drum-machine
+dependencies:
+  - pip
+  - pip:
+    - pygame

@@ -11,6 +11,7 @@ white = (255, 255, 255)
 gray = (128, 128, 128)
 green = (0, 255, 0)
 gold = (212, 175, 55)
+blue = (0, 255, 255)
 
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
 pygame.display.set_caption("Beat Maker")
@@ -22,9 +23,14 @@ beat_count = 8
 instrument_count = 6
 clicked = [[-1 for _ in range(beat_count)]
            for _ in range(instrument_count)]  # -1 means not active
+bpm = 240
+playing = True
+active_length = 0
+active_beat = 1
+beat_changed = True
 
 
-def draw_grid(clicked):
+def draw_grid(clicked, beat):
     left_menu = pygame.draw.rect(screen, gray, [0, 0, 200, HEIGHT - 200], 5)
     bottom_menu = pygame.draw.rect(
         screen, gray, [0, HEIGHT - 200, WIDTH, 200], 5)
@@ -91,6 +97,12 @@ def draw_grid(clicked):
             )
             # rect_shape is for collision detection
             boxes.append((rect_shape, (i, j)))
+        active = pygame.draw.rect(screen, blue, [
+            beat * ((WIDTH - 200)//beat_count) + 200,
+            0,
+            (WIDTH - 200) // beat_count,
+            instrument_count * 100
+        ], 5, 3)
     return boxes
 
 
@@ -98,7 +110,7 @@ run = True
 while run:
     timer.tick(fps)  # as long as run is True, execute code 60 times per sec
     screen.fill(black)
-    boxes = draw_grid(clicked)
+    boxes = draw_grid(clicked, active_beat)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -109,6 +121,21 @@ while run:
                 if rect_object.collidepoint(event.pos):
                     coords = box[1]
                     clicked[coords[1]][coords[0]] *= -1
+
+    beat_length = fps * 60 // bpm
+    if playing:
+        if active_length < beat_length:
+            active_length += 1
+        else:
+            active_length = 0
+            if active_beat < beat_count - 1:
+                active_beat += 1
+                beat_changed = True
+            else:
+                active_beat = 0
+                beat_changed = True
+    
+
 
     pygame.display.flip()  # throw everything onto the screen
 pygame.quit()

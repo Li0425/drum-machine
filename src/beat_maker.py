@@ -1,5 +1,6 @@
 import pygame
-from pygame import mixer
+from pygame import display, draw, mixer
+
 
 pygame.init()
 
@@ -13,8 +14,8 @@ green = (0, 255, 0)
 gold = (212, 175, 55)
 blue = (0, 255, 255)
 
-screen = pygame.display.set_mode([WIDTH, HEIGHT])
-pygame.display.set_caption("Beat Maker")
+screen = display.set_mode([WIDTH, HEIGHT])
+display.set_caption("Beat Maker")
 label_font = pygame.font.Font("freesansbold.ttf", 32)
 
 fps = 60
@@ -29,12 +30,20 @@ active_length = 0
 active_beat = 1
 beat_changed = True
 
+# load in sounds
+hi_hat = mixer.Sound('./sounds/hi hat.WAV')
+snare = mixer.Sound('./sounds/snare.WAV')
+kick = mixer.Sound('./sounds/kick.WAV')
+crash = mixer.Sound('./sounds/crash.wav')
+clap = mixer.Sound('./sounds/clap.wav')
+tom = mixer.Sound('./sounds/tom.WAV')
+mixer.set_num_channels(instrument_count * 3)
+
 
 def draw_grid(clicked, beat):
-    left_menu = pygame.draw.rect(screen, gray, [0, 0, 200, HEIGHT - 200], 5)
-    bottom_menu = pygame.draw.rect(
+    left_menu = draw.rect(screen, gray, [0, 0, 200, HEIGHT - 200], 5)
+    bottom_menu = draw.rect(
         screen, gray, [0, HEIGHT - 200, WIDTH, 200], 5)
-    colours = [gray, white, gray]
     boxes = []
 
     hi_hat_text = label_font.render("Hi Hat", True, white)
@@ -51,7 +60,7 @@ def draw_grid(clicked, beat):
     screen.blit(floor_tom_text, (20, 530))
 
     for i in range(1, instrument_count + 1, 1):
-        pygame.draw.line(screen, gray, (0, i * 100), (200, i * 100), 3)
+        draw.line(screen, gray, (0, i * 100), (200, i * 100), 3)
 
     for i in range(beat_count):
         for j in range(instrument_count):
@@ -59,7 +68,7 @@ def draw_grid(clicked, beat):
                 colour = gray
             else:
                 colour = green
-            rect_shape = pygame.draw.rect(
+            rect_shape = draw.rect(
                 screen,
                 colour,
                 [
@@ -71,7 +80,7 @@ def draw_grid(clicked, beat):
                 0,
                 5
             )
-            pygame.draw.rect(
+            draw.rect(
                 screen,
                 gold,
                 [
@@ -83,7 +92,7 @@ def draw_grid(clicked, beat):
                 5,
                 5
             )
-            pygame.draw.rect(
+            draw.rect(
                 screen,
                 black,
                 [
@@ -97,13 +106,36 @@ def draw_grid(clicked, beat):
             )
             # rect_shape is for collision detection
             boxes.append((rect_shape, (i, j)))
-        active = pygame.draw.rect(screen, blue, [
-            beat * ((WIDTH - 200)//beat_count) + 200,
-            0,
-            (WIDTH - 200) // beat_count,
-            instrument_count * 100
-        ], 5, 3)
+        active = draw.rect(
+            screen,
+            blue,
+            [
+                beat * ((WIDTH - 200)//beat_count) + 200,
+                0,
+                (WIDTH - 200) // beat_count,
+                instrument_count * 100
+            ],
+            5,
+            3
+        )
     return boxes
+
+
+def play_notes():
+    for i in range(len(clicked)):
+        if clicked[i][active_beat] == 1:
+            if i == 0:
+                hi_hat.play()
+            if i == 1:
+                snare.play()
+            if i == 2:
+                kick.play()
+            if i == 3:
+                crash.play()
+            if i == 4:
+                clap.play()
+            if i == 5:
+                tom.play()
 
 
 run = True
@@ -111,6 +143,10 @@ while run:
     timer.tick(fps)  # as long as run is True, execute code 60 times per sec
     screen.fill(black)
     boxes = draw_grid(clicked, active_beat)
+
+    if beat_changed:
+        play_notes()
+        beat_changed = False
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -134,8 +170,7 @@ while run:
             else:
                 active_beat = 0
                 beat_changed = True
-    
+    display.flip()  # throw everything onto the screen
 
 
-    pygame.display.flip()  # throw everything onto the screen
 pygame.quit()

@@ -10,6 +10,7 @@ HEIGHT = 800
 black = (0, 0, 0)
 white = (255, 255, 255)
 gray = (128, 128, 128)
+dark_gray = (50, 50, 50)
 green = (0, 255, 0)
 gold = (212, 175, 55)
 blue = (0, 255, 255)
@@ -17,6 +18,7 @@ blue = (0, 255, 255)
 screen = display.set_mode([WIDTH, HEIGHT])
 display.set_caption("Beat Maker")
 label_font = pygame.font.Font("freesansbold.ttf", 32)
+medium_font = pygame.font.Font("freesansbold.ttf", 24)
 
 fps = 60
 timer = pygame.time.Clock()
@@ -144,6 +146,23 @@ while run:
     screen.fill(black)
     boxes = draw_grid(clicked, active_beat)
 
+    # lower menu buttons
+    play_pause = draw.rect(screen, gray, [
+        50,
+        HEIGHT - 150,
+        200,
+        100],
+        0,
+        5
+    )
+    play_text = label_font.render("Play/Pause", True, white)
+    screen.blit(play_text, (70, HEIGHT - 130))
+    if playing:
+        play_text2 = medium_font.render("Playing", True, dark_gray)
+    else:
+        play_text2 = medium_font.render("Paused", True, dark_gray)
+    screen.blit(play_text2, (70, HEIGHT - 100))
+
     if beat_changed:
         play_notes()
         beat_changed = False
@@ -157,6 +176,12 @@ while run:
                 if rect_object.collidepoint(event.pos):
                     coords = box[1]
                     clicked[coords[1]][coords[0]] *= -1
+        if event.type == pygame.MOUSEBUTTONUP:
+            if play_pause.collidepoint(event.pos):
+                if playing:
+                    playing = False
+                elif not playing:  # cannot be else!
+                    playing = True
 
     beat_length = fps * 60 // bpm
     if playing:
